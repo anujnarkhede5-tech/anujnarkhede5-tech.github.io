@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="OverNote – Sticky Notes Widget for Android. Pin beautiful sticky notes directly on your home screen." />
+  <title>OverNote – Sticky Notes Widget</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #2C5BFF;
+      --brand-dark: #1a3fd4;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --surface3: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --yellow: #f6c90e;
+      --radius: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
+      height: 60px;
+      background: rgba(13,17,23,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--yellow); }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 100px 5% 80px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(44,91,255,0.15) 0%, transparent 70%);
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 5px 14px;
+      background: rgba(44,91,255,0.12);
+      border: 1px solid rgba(44,91,255,0.3);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: #7ca0ff;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+    .hero h1 span { color: var(--yellow); }
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto 40px;
+    }
+    .btn-play {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--brand);
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background .2s, transform .15s;
+      box-shadow: 0 4px 24px rgba(44,91,255,0.35);
+    }
+    .btn-play:hover { background: var(--brand-dark); transform: translateY(-2px); }
+    .btn-play svg { flex-shrink: 0; }
+
+    /* ── WIDGET PREVIEW ── */
+    .preview {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 64px;
+      flex-wrap: wrap;
+      padding: 0 5%;
+    }
+    .note-card {
+      width: 140px;
+      height: 140px;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: rotate(var(--r));
+      transition: transform .2s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .note-card:hover { transform: rotate(0deg) scale(1.06); }
+    .note-card .pin { width: 8px; height: 8px; border-radius: 50%; background: rgba(0,0,0,0.2); }
+    .note-card .title { font-weight: 700; font-size: 0.82rem; color: rgba(0,0,0,0.75); }
+    .note-card .body { color: rgba(0,0,0,0.6); }
+    .nc-yellow { background: #fde68a; --r: -3deg; }
+    .nc-blue   { background: #bfdbfe; --r: 1.5deg; }
+    .nc-green  { background: #bbf7d0; --r: -1deg; }
+    .nc-pink   { background: #fecdd3; --r: 2.5deg; }
+
+    /* ── FEATURES ── */
+    .section { padding: 80px 5%; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--brand);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .section h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 48px;
+      color: var(--text);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: var(--brand); transform: translateY(-3px); }
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 0.875rem; color: var(--text-muted); }
+
+    /* ── CTA ── */
+    .cta {
+      text-align: center;
+      padding: 80px 5%;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .cta h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 12px; }
+    .cta p { color: var(--text-muted); margin-bottom: 32px; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 48px 5%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; transition: color .2s; }
+    footer a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .preview { gap: 8px; }
+      .note-card { width: 110px; height: 110px; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand"><span class="dot"></span>OverNote</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#download">Download</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Android App</div>
+  <h1>Sticky Notes Directly on<br><span>Your Home Screen</span></h1>
+  <p>Beautiful sticky notes that live right on your Android wallpaper. Write, draw, set reminders — always in sight, never forgotten.</p>
+  <a id="download" class="btn-play" href="https://play.google.com/store/apps/details?id=com.overnote.app" target="_blank" rel="noopener">
+    <!-- Play Store icon -->
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3.18 23.76c.33.19.7.24 1.06.15L14.76 12 4.24.09A1.83 1.83 0 0 0 3 1.82v20.36c0 .57.06 1.28.18 1.58z"/>
+      <path d="M18.5 9.24l-2.62-1.5-3.3 3.3 3.3 3.28 2.65-1.52A2.1 2.1 0 0 0 19.7 12a2.1 2.1 0 0 0-1.2-2.76z"/>
+      <path d="M4.24.09l10.52 11.9 3.12-3.12L5.6.04A2.03 2.03 0 0 0 4.24.09z"/>
+      <path d="M4.24 23.91a2.03 2.03 0 0 0 1.36-.05l12.28-7.03-3.12-3.12z"/>
+    </svg>
+    Get it on Google Play
+  </a>
+
+  <!-- Sticky note preview -->
+  <div class="preview">
+    <div class="note-card nc-yellow">
+      <div class="pin"></div>
+      <div class="title">Groceries</div>
+      <div class="body">Milk, eggs, bread, coffee...</div>
+    </div>
+    <div class="note-card nc-blue">
+      <div class="pin"></div>
+      <div class="title">Ideas</div>
+      <div class="body">New app concept for widgets</div>
+    </div>
+    <div class="note-card nc-green">
+      <div class="pin"></div>
+      <div class="title">Reminder</div>
+      <div class="body">Call dentist at 3 PM today</div>
+    </div>
+    <div class="note-card nc-pink">
+      <div class="pin"></div>
+      <div class="title">Reading</div>
+      <div class="body">Finish chapter 12 tonight</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="section">
+  <div class="section-label">Features</div>
+  <h2>Everything you need in a note</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📌</div>
+      <h3>Home Screen Widget</h3>
+      <p>Pin sticky notes as a live Android widget — see your notes without opening the app.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✏️</div>
+      <h3>Handwriting &amp; Drawing</h3>
+      <p>Sketch ideas or write by hand directly on your notes with smooth drawing tools.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <h3>Reminders</h3>
+      <p>Set date and time reminders on any note. Never miss a deadline or appointment.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📶</div>
+      <h3>Offline First</h3>
+      <p>All notes are stored locally on your device. No internet required, no data loss.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>App Lock</h3>
+      <p>Protect your private notes with biometric or PIN lock for peace of mind.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <h3>Color Themes</h3>
+      <p>Pick from multiple note colors and styles to keep your notes organized visually.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Ready to declutter your mind?</h2>
+  <p>Free to download on Android. No account needed to get started.</p>
+  <a class="btn-play" href="https://play.google.com/store/apps/details?id=com.overnote.app" target="_blank" rel="noopener">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M3.18 23.76c.33.19.7.24 1.06.15L14.76 12 4.24.09A1.83 1.83 0 0 0 3 1.82v20.36c0 .57.06 1.28.18 1.58z"/><path d="M18.5 9.24l-2.62-1.5-3.3 3.3 3.3 3.28 2.65-1.52A2.1 2.1 0 0 0 19.7 12a2.1 2.1 0 0 0-1.2-2.76z"/><path d="M4.24.09l10.52 11.9 3.12-3.12L5.6.04A2.03 2.03 0 0 0 4.24.09z"/><path d="M4.24 23.91a2.03 2.03 0 0 0 1.36-.05l12.28-7.03-3.12-3.12z"/></svg>
+    Download Free on Google Play
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <strong style="color:var(--text)">OverNote</strong><br>
+    <span id="contact">overnotesupport@gmail.com</span>
+  </div>
+  <div class="footer-links">
+    <a href="https://play.google.com/store/apps/details?id=com.overnote.app" target="_blank" rel="noopener">Google Play</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="app-ads.txt">app-ads.txt</a>
+  </div>
+  <div>&copy; 2026 OverNote. All rights reserved.</div>
+</footer>
+
+</body>
+</html>
